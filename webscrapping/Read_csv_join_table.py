@@ -1,0 +1,16 @@
+import pandas as pd
+
+df_balance_sheet = pd.read_csv("data_source/損益表.csv")
+print(df_balance_sheet.shape[0])
+df_cash_flow = pd.read_csv('data_source/現金流量表.csv')
+print(df_cash_flow.shape[0])
+df_financial_ratio = pd.read_csv('data_source/財務比率.csv')
+print(df_financial_ratio.shape[0])
+df_financial_situation = pd.read_csv('data_source/財務狀況.csv')
+print(df_financial_situation.shape[0])
+merged_balance_cash_flow = df_balance_sheet.merge(df_cash_flow, on=['公司','財政年度'], how='left')
+merged_02 = merged_balance_cash_flow.merge(df_financial_ratio, on=['公司','財政年度'], how='left')
+merged_final = merged_02.merge(df_financial_situation, on=['公司','財政年度'], how='left')
+merged_final = merged_final.drop(columns=['非控股權益_x', '其他_x'])
+merged_final = merged_final.rename(columns={'非控股權益_y': '非控股權益', '其他_y': '其他'})
+merged_final.to_csv("./data_source/商湯_總寬表.csv", index = False)
