@@ -9,7 +9,7 @@ import pymysql
 pymysql.install_as_MySQLdb()
 import MySQLdb
 from langchain_community.callbacks import StreamlitCallbackHandler
-from testing.Ollama_sql_chain_add_translation import *
+from testing.Ollama_sql_chain_mapping import *
 from deep_translator import GoogleTranslator
 from sqlalchemy import text
 
@@ -23,10 +23,9 @@ st.write(
 class SqlChatbot:
     def __init__(self):
         self.openai_model = utils.configure_openai()
-
     @utils.enable_chat_history
     def main(self):
-        ollama_chain_obj = ollama_sql_chain()
+        ollama_chain_obj = translation_chain()
         user_query = st.chat_input(placeholder="Ask me anything!")
         engine = create_engine('mysql://root:joniwhfe@localhost/Text2SQL_english')
         if user_query:
@@ -35,20 +34,10 @@ class SqlChatbot:
             with st.chat_message("assistant"):
                 st_cb = StreamlitCallbackHandler(st.container())
                 chain = ollama_chain_obj.run('mysql://root:joniwhfe@localhost/Text2SQL_english')
-                translated = GoogleTranslator(source='auto', target='en').translate(text=user_query)
+                translated = chain.invoke({"question": user_query})
+                # response = translated.split("\n")[0].replace("`", "").replace("'", "")
+                st.session_state.messages.append({"role": "assistant", "content": translated})
                 st.write(translated)
-                result = chain.invoke({"question": translated})
-                response = result.split("\n")[0].replace("`", "").replace("'", "")
-                response = f"{response.split(";")[0].replace('"', "")};"
-                st.session_state.messages.append({"role": "assistant", "content": response})
-                st.write(response)
-                print("================================================")
-                print(f"Query: {response}")
-                print("================================================")
-                with engine.connect() as con:
-                    rs = con.execute(text(response))
-                    for row in rs:
-                        st.write(f"Query Result: {row[0]}")
 
 
 if __name__ == "__main__":

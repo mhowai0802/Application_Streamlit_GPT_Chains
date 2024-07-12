@@ -20,7 +20,7 @@ import json
 class ollama_sql_chain():
     # ==================================================================================================================================
     def run(self, db_link):
-        llm = ChatOllama(model="mistral")
+        llm = ChatOllama(model="deepseek-coder")
         engine = sa.create_engine(db_link)
         db = SQLDatabase(engine=engine, metadata=MetaData(schema='Text2SQL_english'))
 
@@ -47,7 +47,7 @@ class ollama_sql_chain():
         ### rule ###
         只能根据下面問題,编写一个SQL回答：
         问题：{question}
-        生成前,先檢查query的有效性
+        生成前先檢查query的有效性
         SQL查询     
         """
         prompt = ChatPromptTemplate.from_template(template)
