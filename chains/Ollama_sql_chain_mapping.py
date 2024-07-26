@@ -30,7 +30,6 @@ def get_cell_value():
             mySql_insert_query = f'INSERT INTO translations (source_name, translation_name) VALUES ("{chinese}", "{english}");'
             conn.execute(text(mySql_insert_query))
 
-
 class translation_chain():
     # ==================================================================================================================================
     def run(self, db_link):
@@ -46,7 +45,6 @@ class translation_chain():
                 return {'chinese': sum(source_name.values.tolist(), []),
                         'english': sum(target_name.values.tolist(), [])
                         }
-
         # ==================================================================================================================================
         template = """
 
@@ -54,9 +52,12 @@ class translation_chain():
         你是一個翻釋專家, 不要編作資料。
 
         ### rule ###
-        跟據{question}, 將中文問題變成英文問題, 不要作其他回應, 數字不用理會。
-
-        ### translation library ###
+        將Question內的句子完整地翻譯成英文，翻譯時使用的字眼優先參照translation mapping。回答時必須直接輸出翻譯完成後的句子，絕對不可回答多餘的句子或註釋，亦不可解釋當中字詞意思，不要說多餘的話，直接回答翻譯結果就好。
+        
+        ### Question ###
+        {question}
+        
+        ### translation mapping ###
         {schema}
         """
         prompt = ChatPromptTemplate.from_template(template)
@@ -71,9 +72,3 @@ class translation_chain():
         # ==================================================================================================================================
         return trans_chain
 
-# object = translation_chain()
-# chain = object.run('mysql://root:joniwhfe@localhost/Text2SQL_english')
-# print("Starting translation...................")
-# question = "商湯科技集團有限公司2023年的毛利？"
-# print(question)
-# print(chain.invoke({"question": question}))

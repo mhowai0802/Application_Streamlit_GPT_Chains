@@ -8,23 +8,26 @@ from langchain import hub
 from langchain_core.prompts import PromptTemplate
 from langchain_experimental.llms.ollama_functions import OllamaFunctions
 import json
+from langchain.agents import Tool
+
 class Company_annual_performance(BaseModel):
     """Get the company name and financial year"""
     company_name: str = Field(description="company_name")
     financial_year: str = Field(description="financial_year")
+class Calculate_sum(BaseModel):
+    """Calculate the summation of two numbers"""
+    first_num: str = Field(description="first_num")
+    second_num: str = Field(description="second_num")
 
 def SQL_Company_annual_performance(compnay, financial_year):
     return f"SELECT * from annual report where company_name = {compnay} and financial_year = {financial_year}"
 
-tools = [Company_annual_performance]
-llm = OllamaFunctions(model="llama2")
-llm_with_tools = llm.bind_tools(tools)
-result = llm_with_tools.invoke("Tencent financial performace?")
-print(json.loads(result.json())['tool_calls'][0]['name'])
-print(json.loads(result.json())['tool_calls'][0]['args'])
-
-match(json.loads(result.json())['tool_calls'][0]['name']):
-    case 'Company_annual_performance':
-        company = json.loads(result.json())['tool_calls'][0]['args']['company_name']
-        financial_year = json.loads(result.json())['tool_calls'][0]['args']['financial_year']
-        print(SQL_Company_annual_performance(company,financial_year))
+def switch_function(tool_name_and_input):
+    tool_name = tool_name_and_input['name']
+    tool_input = tool_name_and_input['args']
+    if tool_name == "Company_annual_performance":
+        return SQL_Company_annual_performance(tool_input['company_name'],tool_input['financial_year'])
+    elif tool_name == 'Calculate_sum':
+        return tool_input
+    else:
+        return 0
